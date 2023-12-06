@@ -1,4 +1,4 @@
-import pathModule from 'path';
+import pathModule from 'path/posix';
 import { groupBy } from 'ramda';
 
 /**

@@ -1,9 +1,8 @@
-# eslint-plugin-relative-imports-when-same-folder
+# eslint-plugin-relative-imports
 
-[![npm version](https://badge.fury.io/js/eslint-plugin-relative-imports-when-same-folder.svg)](https://badge.fury.io/js/eslint-plugin-relative-imports-when-same-folder)
-![example workflow](https://github.com/spicattutti/eslint-plugin-relative-imports-when-same-folder/actions/workflows/test_build_and_publish.yml/badge.svg)
+[![npm version](https://badge.fury.io/js/eslint-plugin-relative-imports.svg)](https://badge.fury.io/js/eslint-plugin-relative-imports)
 
-An eslint plugin that converts any absolute import paths to relative ones **if a file is imported from within the same directory**.
+An eslint plugin that converts any absolute import paths to relative ones **if a file is imported from within the path/baseURL**.
 
 Resolves absolute paths to paths on disk by parsing a `tsconfig.json` expected to be found in the root of the repository
 using this plugin.
@@ -37,6 +36,20 @@ import Bar from "./Bar/Bar"; // valid relative path
 // NOT OK
 import Something from "src/Foo/Bar/Bar";
 ```
+```ts
+// ## Import with same baseURL
+
+// From within a file 
+// src/Foo/Foo.js
+// we want to import
+// src/Bar/Bar.js
+
+// OK
+import Bar from "../Bar/Bar"; // valid relative path
+
+// NOT OK
+import Something from "Bar/Bar";
+```
 
 
 ## Prerequisites / Limitations
@@ -64,9 +77,10 @@ When an alias is mapped to a single path, we assume that another mechanism (e.g.
 When an alias is mapped to more than one path, we check what de-aliased path can be resolved. Here we assume a default set
 of file extensions.
 
-```
+```js
 [
     '.js',
+    '.d.ts',
     '.ts',
     '.jsx',
     '.tsx',
@@ -87,44 +101,30 @@ See the [contributing](CONTRIBUTING.md) guide for broad instructions on how to g
 
 To install, run
 ```
-yarn add -D eslint-plugin-relative-imports-when-same-folder
+yarn add -D eslint-plugin-relative-imports
 ```
-respectively
+or respectively
 ```
-npm install --save-dev eslint-plugin-relative-imports-when-same-folder
+npm install --save-dev eslint-plugin-relative-imports
 ```
 
-Then update your eslint config by adding `relative-imports-when-same-folder` to the list of plugins,
-and turn on the main rule `no-relative-imports-when-same-folder` of this plugin.
-```
-// .eslintrc.js
+Then update your eslint config by adding `relative-imports` to the list of plugins,
+and turn on the main rule `require-relative-imports` of this plugin.
+```js
+  // .eslintrc.js
   plugins: [
     // other plugins ..
-    "relative-imports-when-same-folder",
+    "relative-imports",
   ],
   rules: {
     // other rules ..
-    "relative-imports-when-same-folder/no-relative-imports-when-same-folder": "error",
+    "relative-imports/require-relative-imports": "error",
   }
 ```
 
-## Example Repo
-
-Check out https://github.com/s-pic/fixmy.frontend/tree/use_eslint-plugin-relative-imports-when-same-folder.
-It is a not too small, real-world project.
-
 # How this was born
 
-In a codebase, we wanted to have three kinds of import blocks:
-1. Third party modules (e.g. `lodash`)
-2. Imports from outside the folder the current file is in (e.g. `src/utils/some_util`)
-3. Imports from within the same file, as relative imports (`./some_sub_component`)
-
-We utilized [import/order](https://github.com/import-js/eslint-plugin-import/blob/main/docs/rules/order.md) for the ordering as well as [eslint-plugin-no-relative-import-paths](https://www.npmjs.com/package/eslint-plugin-no-relative-import-paths) with `allowSameFolder`) to only allow imports from within the same file. Using that setup we could enforce allmost all of the mentioned constraints we wanted to apply:
-- imports where ordered in those mentioned blocks
-- relative imports where only allowed from within the same folder
-
-What was missing was automation to refactor all absolute imports that can be relative to actually be relative, so they are moved to the last block.
+Due to the use of embedding compiled TypeScript in a game engine. (see https://roblox-ts.com for more info), it is more efficient to use relative paths. It also is the only option when using some isolated containers. Therefore, a lint was required to force the imports to be relative where possible (under the baseURL). 
 
 
 # TODOs
@@ -139,4 +139,4 @@ What was missing was automation to refactor all absolute imports that can be rel
 
 # Acknowledgements
 
-Thanks [SMG](https://swissmarketplace.group/en/) for letting me work on company time.
+Thanks to the https://github.com/spicattutti/eslint-plugin-relative-imports-when-same-folder - the original project this was forked from.

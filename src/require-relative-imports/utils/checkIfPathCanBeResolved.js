@@ -4,6 +4,7 @@ const resolveModule = require('enhanced-resolve');
 const supportedExtensions = [
 	'.js',
 	'.ts',
+	'.d.ts',
 	'.jsx',
 	'.tsx',
 	'.scss',

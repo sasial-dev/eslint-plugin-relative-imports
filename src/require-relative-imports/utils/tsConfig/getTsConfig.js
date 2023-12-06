@@ -1,5 +1,5 @@
 import fs from 'fs';
-import path from 'path';
+import path from 'path/posix';
 
 function findDirWithFile(filename) {
 	// start at our CWD and traverse upwards until we either hit the root "/" or find a directory with our file

@@ -75,6 +75,20 @@ describe('createRule', () => {
 			});
 			expect(defaultContext.report).not.toHaveBeenCalled();
 		});
+		it('also allows a parent import', () => {
+			runRuleForPath({
+				importPath: '../foo',
+				inspectedFilePath: 'does-not-matter',
+			});
+			expect(defaultContext.report).not.toHaveBeenCalled();
+		});
+		it('also allows an index import', () => {
+			runRuleForPath({
+				importPath: '.',
+				inspectedFilePath: 'does-not-matter',
+			});
+			expect(defaultContext.report).not.toHaveBeenCalled();
+		});
 	});
 
 	describe('for absolute import paths', () => {
@@ -149,7 +163,7 @@ describe('createRule', () => {
 
 				expect(defaultContext.report).toHaveBeenCalledWith({
 					data: {
-						fixedImportPath: './',
+						fixedImportPath: '.',
 					},
 					fix: expect.any(Function),
 					messageId: messageIds.importCanBeRelative,
@@ -163,7 +177,7 @@ describe('createRule', () => {
 		});
 
 		describe('that imports from a sibling folder', () => {
-			it('does not report an error', () => {
+			it('reports an error', () => {
 				runRuleForPath({
 					inspectedFilePath:
 						'/Users/spic/dev/some_repo/src/library/components/FormCheckbox/FormCheckbox.tsx',
@@ -171,7 +185,18 @@ describe('createRule', () => {
 					tsConfig,
 				});
 
-				expect(defaultContext.report).not.toHaveBeenCalled();
+				expect(defaultContext.report).toHaveBeenCalledWith({
+					data: {
+						fixedImportPath: '../Form/Form.scss',
+					},
+					fix: expect.any(Function),
+					messageId: messageIds.importCanBeRelative,
+					node: {
+						source: {
+							value: '@library/components/Form/Form.scss',
+						},
+					},
+				});
 			});
 		});
 

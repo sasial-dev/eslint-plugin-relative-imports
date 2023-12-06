@@ -1,4 +1,4 @@
-import pathModule from 'path';
+import pathModule from 'path/posix';
 
 import checkIfRelativePath from './utils/checkIfRelativePath';
 import getTsConfig from './utils/tsConfig/getTsConfig';
@@ -11,7 +11,7 @@ export const messageIds = {
 };
 
 const ERROR_INFO =
-	'This rule relies on absolute import paths being setup in tsconfig. Pls check the plugin docs.';
+	'This rule relies on absolute import paths being setup in tsconfig. Please check the plugin docs.';
 
 /**
  * A function meant to be passed to as `create` option to the eslint rule.
@@ -35,6 +35,14 @@ function createRule(context) {
 			`No module resolution setup found in tsConfig.json.\n\n${ERROR_INFO} \n\n`
 		);
 	}
+
+	const baseDir = pathModule.join(
+		linterCwd,
+		resolveImportPathsBasedOnTsConfig({
+			tsConfig,
+			importPath: '',
+		})[0]
+	);
 
 	return {
 		// AST element to provide the import path
@@ -61,25 +69,21 @@ function createRule(context) {
 				(source) => pathModule.join(linterCwd, source) // e.g.["/Users/spic/dev/some_repo/src/library/Foo/Bar/Baz/baz.ts"]
 			);
 
-			// If we have two sources, check if one of these exists. Take the first match.
-			const existingAbsoluteImportSources =
-				absoluteImportSources.length > 1
-					? absoluteImportSources.filter((absoluteImportSource) =>
-							checkIfPathCanBeResolved({
-								fromDir: linterCwd,
-								// pathModule.relative returned sth like Baz/baz.ts. Make it a proper relative import path preceded by a dot.
-								toPath: `./${pathModule.relative(
-									linterCwd,
-									absoluteImportSource
-								)}`,
-							})
-					  )
-					: absoluteImportSources;
+			// Check if the imports can be resolved
+			const existingAbsoluteImportSources = absoluteImportSources.filter(
+				(absoluteImportSource) =>
+					checkIfPathCanBeResolved({
+						fromDir: linterCwd,
+						// pathModule.relative returned sth like Baz/baz.ts. Make it a proper relative import path preceded by a dot.
+						toPath: `./${pathModule.relative(linterCwd, absoluteImportSource)}`,
+					})
+			);
 
 			if (!existingAbsoluteImportSources.length === 1) {
 				return;
 			}
 			const [importSource] = existingAbsoluteImportSources;
+
 			if (!importSource?.length) {
 				return;
 			}
@@ -88,14 +92,23 @@ function createRule(context) {
 				pathModule.relative(dirOfInspectedFile, importSource)
 			);
 
-			const isImportFromParent = relativePath.startsWith('..');
+			const destBaseURL = pathModule
+				.normalize(pathModule.relative(baseDir, importSource))
+				.split(pathModule.sep)[0];
+
+			const sourceBaseURL = pathModule
+				.normalize(pathModule.relative(baseDir, dirOfInspectedFile))
+				.split(pathModule.sep)[0];
+
+			const isImportFromParent = destBaseURL !== sourceBaseURL;
 			if (isImportFromParent) {
 				return;
 			}
 
 			// pathModule.relative returned sth like Baz/baz.ts. Make it a proper relative import path preceded by a dot.
-			// TODO: find node util or lib to solve this, must not be hand-rolled
-			relativePath = relativePath === '.' ? './' : `./${relativePath}`;
+			if (!checkIfRelativePath(relativePath)) {
+				relativePath = `./${relativePath}`;
+			}
 
 			// finally, propose fix
 
