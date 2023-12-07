@@ -15,6 +15,20 @@ describe('resolveImportPathBasedOnTsConfig', () => {
 		expect(possiblePaths[0]).toBe('src/components/foo');
 	});
 
+	test('`baseUrl` does not have preceding .', () => {
+		const tsConfig = {
+			compilerOptions: {
+				baseUrl: 'src',
+			},
+		};
+
+		const possiblePaths = resolveImportPathsBasedOnTsConfig({
+			tsConfig,
+			importPath: 'components/foo',
+		});
+		expect(possiblePaths[0]).toBe('src/components/foo');
+	});
+
 	describe('when tsConfig also states paths', () => {
 		const tsConfig = {
 			compilerOptions: {

@@ -17,20 +17,21 @@ export default function resolveImportPathsBasedOnTsConfig({
 	const pathMappings = tsConfig.compilerOptions.paths;
 
 	if (!pathMappings) {
+		const { baseUrl } = tsConfig.compilerOptions;
 		// only baseUrl (e.g. `.` or `./src` is stated)
 		if (
-			!tsConfig.compilerOptions.baseUrl.length || // TODO: check if that is possible
-			tsConfig.compilerOptions.baseUrl === '.'
+			!baseUrl.length || // TODO: check if that is possible
+			baseUrl === '.'
 		) {
 			return importPath;
 		}
-		if (tsConfig.compilerOptions.baseUrl.startsWith('./')) {
-			const baseUrlAsAbsolute = tsConfig.compilerOptions.baseUrl.replace(
-				'./',
-				''
-			); // ./src -> src
+
+		if (baseUrl.startsWith('./')) {
+			const baseUrlAsAbsolute = baseUrl.replace('./', ''); // ./src -> src
 			return [pathModule.join(baseUrlAsAbsolute, importPath)];
 		}
+
+		return [pathModule.join(baseUrl, importPath)];
 	}
 
 	// Reminder: TS can resolve one alias to multiple paths
