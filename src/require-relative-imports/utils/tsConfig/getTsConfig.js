@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path/posix';
+import JSON5 from 'json5';
 
 function findDirWithFile(filename) {
 	// start at our CWD and traverse upwards until we either hit the root "/" or find a directory with our file
@@ -27,7 +28,7 @@ export default function getTsConfig() {
 	}
 	const tsConfig = fs.readFileSync(fpath);
 
-	const config = JSON.parse(tsConfig);
+	const config = JSON5.parse(tsConfig);
 
 	return config;
 }

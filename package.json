@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-relative-imports",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.2",
   "description": "An eslint plugin to convert any absolute import paths to relative ones if files are imported from within the same baseURL",
   "main": "dist/index.js",
   "scripts": {
@@ -37,6 +37,7 @@
   "homepage": "https://github.com/spicattutti/eslint-plugin-relative-imports-when-same-folder#readme",
   "dependencies": {
     "enhanced-resolve": "^5.9.3",
+    "json5": "^2.2.3",
     "ramda": "^0.28.0"
   },
   "devDependencies": {
